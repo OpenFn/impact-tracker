@@ -7,6 +7,8 @@ defmodule ImpactTrackerWeb.Router do
 
   scope "/api", ImpactTrackerWeb do
     pipe_through :api
+
+    post "/metrics", MetricsController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
