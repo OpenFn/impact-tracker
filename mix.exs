@@ -9,6 +9,14 @@ defmodule ImpactTracker.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      preferred_cli_env: [
+        verify: :test,
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+      test_coverage: [tool: ExCoveralls],
       deps: deps()
     ]
   end
@@ -32,19 +40,24 @@ defmodule ImpactTracker.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7.10"},
-      {:phoenix_ecto, "~> 4.4"},
+      {:credo, "~> 1.7.3", only: [:test, :dev]},
+      {:dialyxir, "~> 1.4.3", only: [:test, :dev], runtime: false},
+      {:dns_cluster, "~> 0.1.1"},
       {:ecto_sql, "~> 3.10"},
-      {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_dashboard, "~> 0.8.2"},
-      {:swoosh, "~> 1.3"},
+      {:excoveralls, "~> 0.18.0", only: [:test, :dev]},
       {:finch, "~> 0.13"},
-      {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:oban, "~> 2.17"},
+      {:phoenix, "~> 1.7.10"},
+      {:phoenix_ecto, "~> 4.4"},
+      {:phoenix_live_dashboard, "~> 0.8.2"},
+      {:postgrex, ">= 0.0.0"},
+      {:plug_cowboy, "~> 2.5"},
+      {:sobelow, "~> 0.13.0", only: [:test, :dev]},
+      {:swoosh, "~> 1.3"},
+      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_poller, "~> 1.0"}
     ]
   end
 
@@ -59,7 +72,14 @@ defmodule ImpactTracker.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      verify: [
+        "coveralls.html",
+        "format --check-formatted",
+        "dialyzer",
+        "credo --strict --all",
+        "sobelow"
+      ]
     ]
   end
 end

@@ -23,7 +23,8 @@ config :impact_tracker, ImpactTrackerWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "Zyb4lXKh0n7jdzq2Tmto/rGQUfa1Dc7KB2TeLcWMmXCNzchlzQXwOrsFGyXN4ODQ",
+  secret_key_base:
+    "Zyb4lXKh0n7jdzq2Tmto/rGQUfa1Dc7KB2TeLcWMmXCNzchlzQXwOrsFGyXN4ODQ",
   watchers: []
 
 # ## SSL Support

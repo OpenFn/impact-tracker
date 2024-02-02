@@ -2,7 +2,9 @@ defmodule ImpactTrackerWeb.ErrorJSONTest do
   use ImpactTrackerWeb.ConnCase, async: true
 
   test "renders 404" do
-    assert ImpactTrackerWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
+    assert ImpactTrackerWeb.ErrorJSON.render("404.json", %{}) == %{
+             errors: %{detail: "Not Found"}
+           }
   end
 
   test "renders 500" do

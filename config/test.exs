@@ -17,7 +17,8 @@ config :impact_tracker, ImpactTracker.Repo,
 # you can enable the server option below.
 config :impact_tracker, ImpactTrackerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "0hvtvUlDY4RUEz9+ziVh3P+afQJXzvlf+ReSbL7sX6vJibjOrgAva2DoSq/pv0Oz",
+  secret_key_base:
+    "0hvtvUlDY4RUEz9+ziVh3P+afQJXzvlf+ReSbL7sX6vJibjOrgAva2DoSq/pv0Oz",
   server: false
 
 # In test we don't send emails.
@@ -31,3 +32,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Do not run jobs and plugins during test runs
+config :impact_tracker, Oban, testing: :manual

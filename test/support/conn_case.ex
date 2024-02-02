@@ -23,6 +23,7 @@ defmodule ImpactTrackerWeb.ConnCase do
       @endpoint ImpactTrackerWeb.Endpoint
 
       use ImpactTrackerWeb, :verified_routes
+      use Oban.Testing, repo: ImpactTracker.Repo
 
       # Import conveniences for testing with connections
       import Plug.Conn

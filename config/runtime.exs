@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :impact_tracker, ImpactTrackerWeb.Endpoint, server: true
 end
 
+config :impact_tracker, Oban,
+  queues: [default: 4],
+  repo: ImpactTracker.Repo
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -28,12 +32,13 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+  maybe_ipv6 =
+    if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :impact_tracker, ImpactTracker.Repo,
     ssl: true,
     ssl_opts: [
-      verify: :verify_none,
+      verify: :verify_none
     ],
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
