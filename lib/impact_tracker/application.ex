@@ -10,12 +10,14 @@ defmodule ImpactTracker.Application do
     children = [
       ImpactTrackerWeb.Telemetry,
       ImpactTracker.Repo,
-      {DNSCluster, query: Application.get_env(:impact_tracker, :dns_cluster_query) || :ignore},
+      {DNSCluster,
+       query: Application.get_env(:impact_tracker, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: ImpactTracker.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: ImpactTracker.Finch},
       # Start a worker by calling: ImpactTracker.Worker.start_link(arg)
       # {ImpactTracker.Worker, arg},
+      {Oban, Application.fetch_env!(:impact_tracker, Oban)},
       # Start to serve requests, typically the last entry
       ImpactTrackerWeb.Endpoint
     ]

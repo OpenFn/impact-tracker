@@ -1,10 +1,13 @@
 defmodule ImpactTrackerWeb.MetricsController do
   use ImpactTrackerWeb, :controller
-  require Logger
 
-  def create(conn, _params) do
-    Logger.info("Received metrics! Huzzah!")
+  def create(conn, params) do
+    params
+    |> ImpactTracker.CaptureReportSubmissionWorker.new()
+    |> Oban.insert()
 
-    json(conn, %{status: :ok})
+    conn
+    |> put_status(:accepted)
+    |> json(%{status: :ok})
   end
 end
