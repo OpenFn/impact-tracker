@@ -44,6 +44,7 @@ defmodule ImpactTracker.MixProject do
       {:dialyxir, "~> 1.4.3", only: [:test, :dev], runtime: false},
       {:dns_cluster, "~> 0.1.1"},
       {:ecto_sql, "~> 3.10"},
+      {:ex_machina, "~> 2.7.0", only: :test},
       {:excoveralls, "~> 0.18.0", only: [:test, :dev]},
       {:finch, "~> 0.13"},
       {:gettext, "~> 0.20"},

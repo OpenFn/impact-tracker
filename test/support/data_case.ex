@@ -29,6 +29,7 @@ defmodule ImpactTracker.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import ImpactTracker.DataCase
+      import ImpactTracker.Factory
     end
   end
 
