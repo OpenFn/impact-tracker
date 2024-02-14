@@ -130,7 +130,6 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       |> Map.merge(%{
         operating_system: "Kali",
         no_of_users: 10,
-        no_of_projects: 5,
         version: "2.0.0rc1"
       })
     end
@@ -146,7 +145,6 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       [
         %{
           no_of_users: 10,
-          no_of_workflows: 2,
           workflows: workflows
         }
         |> Map.merge(build_identity_data(nil, build_hash("bar")))

@@ -17,7 +17,6 @@ defmodule ImpactTracker.SubmissionTest do
       assert %{
                generated_at: ^generated_at,
                lightning_version: "2.0.0rc1",
-               no_of_projects: 5,
                no_of_users: 10,
                operating_system: "Kali",
                version: "1"
@@ -62,56 +61,6 @@ defmodule ImpactTracker.SubmissionTest do
                  [{:validation, :required}]
                }
              ] = errors
-    end
-
-    test "validates the presence of no_of_projects" do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          build_submission_data_sans("instance", "no_of_projects")
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               no_of_projects: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates that no_of_projects is greater than or equal to zero" do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          build_submission_data("instance", "no_of_projects", -1)
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               no_of_projects: {
-                 "must be greater than or equal to %{number}",
-                 [
-                   {:validation, :number},
-                   {:kind, :greater_than_or_equal_to},
-                   {:number, 0}
-                 ]
-               }
-             ] = errors
-
-      changeset =
-        %Submission{}
-        |> Submission.new(build_submission_data("instance", "no_of_projects", 0))
-
-      assert %Changeset{valid?: true} = changeset
-
-      changeset =
-        %Submission{}
-        |> Submission.new(build_submission_data("instance", "no_of_projects", 1))
-
-      assert %Changeset{valid?: true} = changeset
     end
 
     test "validates the presence of no_of_users" do
@@ -227,7 +176,6 @@ defmodule ImpactTracker.SubmissionTest do
       "instance" => %{
         "operating_system" => "Kali",
         "no_of_users" => 10,
-        "no_of_projects" => 5,
         "version" => "2.0.0rc1"
       },
       "projects" => build_project_data(),
@@ -267,14 +215,12 @@ defmodule ImpactTracker.SubmissionTest do
         "cleartext_uuid" => nil,
         "hashed_uuid" => hash("foo"),
         "no_of_users" => 10,
-        "no_of_workflows" => 0,
         "workflows" => []
       },
       %{
         "cleartext_uuid" => nil,
         "hashed_uuid" => hash("bar"),
         "no_of_users" => 30,
-        "no_of_workflows" => 0,
         "workflows" => []
       }
     ]
