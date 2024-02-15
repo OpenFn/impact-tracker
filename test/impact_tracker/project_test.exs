@@ -19,8 +19,7 @@ defmodule ImpactTracker.ProjectTest do
         %{
           cleartext_uuid: ^cleartext_uuid,
           hashed_uuid: ^hashed_uuid,
-          no_of_users: 10,
-          no_of_workflows: 2
+          no_of_users: 10
         } = changes
       )
 
@@ -91,53 +90,6 @@ defmodule ImpactTracker.ProjectTest do
       assert %Changeset{valid?: true} = changeset
     end
 
-    test "validates the presence of no_of_workflows" do
-      changeset =
-        %Project{}
-        |> Project.changeset(build_project_data_sans("no_of_workflows"))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert(
-        [
-          no_of_workflows: {"can't be blank", [{:validation, :required}]}
-        ] = errors
-      )
-    end
-
-    test "validates that no_of_workflows is greater than or equal to 0" do
-      changeset =
-        %Project{}
-        |> Project.changeset(build_project_data("no_of_workflows", -1))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert(
-        [
-          no_of_workflows: {
-            "must be greater than or equal to %{number}",
-            [
-              {:validation, :number},
-              {:kind, :greater_than_or_equal_to},
-              {:number, 0}
-            ]
-          }
-        ] = errors
-      )
-
-      changeset =
-        %Project{}
-        |> Project.changeset(build_project_data("no_of_workflows", 0))
-
-      assert %Changeset{valid?: true} = changeset
-
-      changeset =
-        %Project{}
-        |> Project.changeset(build_project_data("no_of_workflows", 1))
-
-      assert %Changeset{valid?: true} = changeset
-    end
-
     test "if cleartext_uuid is present, validates that the hashed_uuid matches" do
       changeset =
         %Project{}
@@ -187,7 +139,6 @@ defmodule ImpactTracker.ProjectTest do
       "cleartext_uuid" => uuid,
       "hashed_uuid" => hash(uuid),
       "no_of_users" => 10,
-      "no_of_workflows" => 2,
       "workflows" => build_workflow_data()
     }
   end

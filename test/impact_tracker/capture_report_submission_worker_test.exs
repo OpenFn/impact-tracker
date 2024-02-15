@@ -47,7 +47,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
 
       assert :ok = perform_job(Worker, data)
 
-      assert %Submission{operating_system: "Kali"} = Submission |> Repo.one()
+      assert %Submission{operating_system: "linux"} = Submission |> Repo.one()
     end
 
     test "creates a new submission for an existing instance" do
@@ -60,7 +60,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       _existing_submission =
         insert(:submission,
           instance_id: existing_instance.id,
-          operating_system: "Gentoo"
+          operating_system: "winnt"
         )
 
       assert :ok = perform_job(Worker, data)
@@ -70,7 +70,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       assert(
         Submission
         |> Repo.get_by(
-          operating_system: "Kali",
+          operating_system: "linux",
           instance_id: existing_instance.id
         ) != nil
       )
@@ -94,7 +94,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       _existing_submission =
         insert(:submission,
           instance_id: existing_instance.id,
-          operating_system: "Gentoo"
+          operating_system: "winnt"
         )
 
       assert :ok = perform_job(Worker, data)
@@ -102,7 +102,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       assert(
         Submission
         |> Repo.get_by(
-          operating_system: "Kali",
+          operating_system: "linux",
           instance_id: existing_instance.id
         ) == nil
       )
@@ -128,9 +128,9 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     defp build_instance_data(uuid, hash) do
       build_identity_data(uuid, hash)
       |> Map.merge(%{
-        operating_system: "Kali",
+        operating_system: "linux",
+        operating_system_detail: "Linux fedora 6.7.4-200.fc39.x86_64 blah",
         no_of_users: 10,
-        no_of_projects: 5,
         version: "2.0.0rc1"
       })
     end
@@ -146,7 +146,6 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       [
         %{
           no_of_users: 10,
-          no_of_workflows: 2,
           workflows: workflows
         }
         |> Map.merge(build_identity_data(nil, build_hash("bar")))
