@@ -19,7 +19,7 @@ defmodule ImpactTracker.ProjectTest do
         %{
           cleartext_uuid: ^cleartext_uuid,
           hashed_uuid: ^hashed_uuid,
-          no_of_users: 10,
+          no_of_users: 10
         } = changes
       )
 

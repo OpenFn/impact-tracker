@@ -18,7 +18,8 @@ defmodule ImpactTracker.SubmissionTest do
                generated_at: ^generated_at,
                lightning_version: "2.0.0rc1",
                no_of_users: 10,
-               operating_system: "Kali",
+               operating_system: "linux",
+               operating_system_detail: "Fedora blah",
                version: "1"
              } = changes
 
@@ -126,6 +127,36 @@ defmodule ImpactTracker.SubmissionTest do
              ] = errors
     end
 
+    test "requires additional detail if operating system is linux" do
+      changeset =
+        %Submission{}
+        |> Submission.new(
+          build_submission_data_sans("instance", "operating_system_detail")
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [
+               operating_system_detail: {
+                 "can't be blank",
+                 [{:validation, :required}]
+               }
+             ] = errors
+    end
+
+    test "does not require detail if operating system is not linux" do
+      data =
+        build_submission_data_sans(
+          "instance",
+          "operating_system_detail",
+          build_submission_data("instance", "operating_system", "notlinux")
+        )
+
+      changeset = %Submission{} |> Submission.new(data)
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
     test "validates the presence of version" do
       changeset =
         %Submission{}
@@ -174,7 +205,8 @@ defmodule ImpactTracker.SubmissionTest do
     %{
       "generated_at" => "2024-02-06T12:50:37.245897Z",
       "instance" => %{
-        "operating_system" => "Kali",
+        "operating_system" => "linux",
+        "operating_system_detail" => "Fedora blah",
         "no_of_users" => 10,
         "version" => "2.0.0rc1"
       },
@@ -199,8 +231,8 @@ defmodule ImpactTracker.SubmissionTest do
     build_submission_data() |> Map.delete(key)
   end
 
-  defp build_submission_data_sans(parent_key, key) do
-    data = build_submission_data()
+  defp build_submission_data_sans(parent_key, key, existing_data \\ nil) do
+    data = existing_data || build_submission_data()
 
     key_removed =
       data[parent_key]

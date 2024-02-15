@@ -16,12 +16,13 @@ defmodule ImpactTracker.Submission do
   schema "submissions" do
     has_many :projects, Project
 
-    field :instance_id, Ecto.UUID
     field :generated_at, :utc_datetime_usec
-    field :operating_system, :string
+    field :instance_id, Ecto.UUID
     field :lightning_version, :string
-    field :version, :string
     field :no_of_users, :integer
+    field :operating_system, :string
+    field :operating_system_detail, :string
+    field :version, :string
 
     timestamps()
   end
@@ -29,7 +30,16 @@ defmodule ImpactTracker.Submission do
   def new(struct, attrs) do
     submission_attrs = attrs |> extract_submission_attrs()
 
-    attr_names = [
+    cast_attrs = [
+      :generated_at,
+      :lightning_version,
+      :no_of_users,
+      :operating_system,
+      :operating_system_detail,
+      :version
+    ]
+
+    required_attrs = [
       :generated_at,
       :lightning_version,
       :no_of_users,
@@ -38,10 +48,11 @@ defmodule ImpactTracker.Submission do
     ]
 
     struct
-    |> cast(submission_attrs, attr_names)
-    |> validate_required(attr_names)
+    |> cast(submission_attrs, cast_attrs)
+    |> validate_required(required_attrs)
     |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
     |> validate_inclusion(:version, @supported_versions)
+    |> validate_operating_system()
     |> cast_assoc(:projects)
   end
 
@@ -51,6 +62,8 @@ defmodule ImpactTracker.Submission do
       lightning_version: attrs |> extract_attr("instance", "version"),
       no_of_users: attrs |> extract_attr("instance", "no_of_users"),
       operating_system: attrs |> extract_attr("instance", "operating_system"),
+      operating_system_detail:
+        attrs |> extract_attr("instance", "operating_system_detail"),
       projects: attrs |> extract_attr("projects"),
       version: attrs |> extract_attr("version")
     }
@@ -68,4 +81,12 @@ defmodule ImpactTracker.Submission do
       nested_attrs -> nested_attrs |> Map.get(key)
     end)
   end
+
+  defp validate_operating_system(
+         changeset = %{changes: %{operating_system: "linux"}}
+       ) do
+    changeset |> validate_required(:operating_system_detail)
+  end
+
+  defp validate_operating_system(changeset), do: changeset
 end
