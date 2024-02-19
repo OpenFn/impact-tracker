@@ -43,6 +43,10 @@ defmodule ImpactTrackerWeb.Endpoint do
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
+  plug RemoteIp,
+    headers: ["x-forwarded-for"],
+    proxies: {ImpactTrackerWeb.RemoteIPConfiguration, :proxy_ips, []}
+
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options

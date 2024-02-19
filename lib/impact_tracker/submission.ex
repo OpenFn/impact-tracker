@@ -16,26 +16,33 @@ defmodule ImpactTracker.Submission do
   schema "submissions" do
     has_many :projects, Project
 
+    field :country, :string
     field :generated_at, :utc_datetime_usec
     field :instance_id, Ecto.UUID
     field :lightning_version, :string
     field :no_of_users, :integer
     field :operating_system, :string
     field :operating_system_detail, :string
+    field :region, :string
     field :version, :string
 
     timestamps()
   end
 
-  def new(struct, attrs) do
-    submission_attrs = attrs |> extract_submission_attrs()
+  def new(struct, attrs, geolocation_attrs) do
+    submission_attrs =
+      attrs
+      |> Map.merge(geolocation_attrs)
+      |> extract_submission_attrs()
 
     cast_attrs = [
+      :country,
       :generated_at,
       :lightning_version,
       :no_of_users,
       :operating_system,
       :operating_system_detail,
+      :region,
       :version
     ]
 
@@ -58,6 +65,7 @@ defmodule ImpactTracker.Submission do
 
   defp extract_submission_attrs(attrs) do
     %{
+      country: attrs |> extract_attr("country"),
       generated_at: attrs |> extract_attr("generated_at"),
       lightning_version: attrs |> extract_attr("instance", "version"),
       no_of_users: attrs |> extract_attr("instance", "no_of_users"),
@@ -65,6 +73,7 @@ defmodule ImpactTracker.Submission do
       operating_system_detail:
         attrs |> extract_attr("instance", "operating_system_detail"),
       projects: attrs |> extract_attr("projects"),
+      region: attrs |> extract_attr("region"),
       version: attrs |> extract_attr("version")
     }
   end

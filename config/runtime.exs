@@ -24,6 +24,31 @@ config :impact_tracker, Oban,
   queues: [default: 4],
   repo: ImpactTracker.Repo
 
+if config_env() == :test do
+  # Test setup for geoip
+  config :geoip,
+    provider: :test,
+    test_results: %{
+      "20.20.20.20" => %{
+        country: "ZA",
+        region: "Western Cape"
+      },
+      "21.21.21.21" => %{
+        ip: "21.21.21.21"
+      },
+      default_test_result: %{
+        country: "ZA",
+        region: "Test Fallthrough"
+      }
+    }
+else
+  config :geoip, provider: :ipinfo, api_key: System.get_env("IPINFO_API_KEY")
+end
+
+# Get a list of trusted proxies for use by remote_ip 
+
+config :impact_tracker, remote_ip_proxy_ips: System.get_env("PROXY_IPS", "")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
