@@ -11,8 +11,6 @@ defmodule ImpactTracker.CaptureReportSubmissionWorker do
   alias ImpactTracker.Repo
   alias ImpactTracker.Submission
 
-  require Logger
-
   @impl Oban.Worker
   def perform(job) do
     %Oban.Job{args: submission} = job
