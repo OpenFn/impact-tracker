@@ -55,6 +55,7 @@ defmodule ImpactTracker.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.2"},
       {:postgrex, ">= 0.0.0"},
       {:plug_cowboy, "~> 2.5"},
+      {:remote_ip, "~> 1.1"},
       {:sobelow, "~> 0.13.0", only: [:test, :dev]},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 0.6"},
