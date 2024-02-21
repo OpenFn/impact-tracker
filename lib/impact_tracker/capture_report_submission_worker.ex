@@ -13,9 +13,9 @@ defmodule ImpactTracker.CaptureReportSubmissionWorker do
 
   @impl Oban.Worker
   def perform(job) do
-    %Oban.Job{args: submission} = job
+    %Oban.Job{args: %{"report" => report, "geolocation" => geolocation}} = job
 
-    instance_changeset = Instance.new(submission)
+    instance_changeset = Instance.new(report)
 
     if instance_changeset.valid? do
       %{changes: %{hashed_uuid: hashed_uuid}} = instance_changeset
@@ -23,10 +23,10 @@ defmodule ImpactTracker.CaptureReportSubmissionWorker do
       if instance = Instance |> Repo.get_by(hashed_uuid: hashed_uuid) do
         instance
         |> Ecto.build_assoc(:submissions)
-        |> Submission.new(submission)
+        |> Submission.new(report, geolocation)
         |> Repo.insert()
       else
-        submission_changeset = Submission.new(%Submission{}, submission)
+        submission_changeset = Submission.new(%Submission{}, report, geolocation)
 
         instance_changeset
         |> put_assoc(:submissions, [submission_changeset])

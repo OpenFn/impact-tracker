@@ -11,7 +11,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
 
       data = build_submission_data()
 
-      %{instance: %{hashed_uuid: hashed_uuid}} = data
+      %{report: %{instance: %{hashed_uuid: hashed_uuid}}} = data
 
       assert :ok = perform_job(Worker, data)
 
@@ -33,7 +33,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     test "does not create an instance entry if one already exists" do
       data = build_submission_data()
 
-      %{instance: %{hashed_uuid: hashed_uuid}} = data
+      %{report: %{instance: %{hashed_uuid: hashed_uuid}}} = data
 
       _existing_instance = insert(:instance, hashed_uuid: hashed_uuid)
 
@@ -47,13 +47,17 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
 
       assert :ok = perform_job(Worker, data)
 
-      assert %Submission{operating_system: "linux"} = Submission |> Repo.one()
+      assert %Submission{
+               country: "US",
+               operating_system: "linux",
+               region: "North Dakota"
+             } = Submission |> Repo.one()
     end
 
     test "creates a new submission for an existing instance" do
       data = build_submission_data()
 
-      %{instance: %{hashed_uuid: hashed_uuid}} = data
+      %{report: %{instance: %{hashed_uuid: hashed_uuid}}} = data
 
       existing_instance = insert(:instance, hashed_uuid: hashed_uuid)
 
@@ -70,7 +74,9 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       assert(
         Submission
         |> Repo.get_by(
+          country: "US",
           operating_system: "linux",
+          region: "North Dakota",
           instance_id: existing_instance.id
         ) != nil
       )
@@ -87,7 +93,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     test "does not add submission to existing instance when data is invalid" do
       data = build_submission_data(workflows: build_broken_workflows_data())
 
-      %{instance: %{hashed_uuid: hashed_uuid}} = data
+      %{report: %{instance: %{hashed_uuid: hashed_uuid}}} = data
 
       existing_instance = insert(:instance, hashed_uuid: hashed_uuid)
 
@@ -102,7 +108,9 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       assert(
         Submission
         |> Repo.get_by(
+          country: "US",
           operating_system: "linux",
+          region: "North Dakota",
           instance_id: existing_instance.id
         ) == nil
       )
@@ -118,10 +126,16 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       workflows = options |> Keyword.get(:workflows, build_workflows_data())
 
       %{
-        generated_at: "2024-02-06T12:50:37.245897Z",
-        instance: build_instance_data(uuid, hash),
-        projects: build_projects_data(workflows),
-        version: "1"
+        report: %{
+          generated_at: "2024-02-06T12:50:37.245897Z",
+          instance: build_instance_data(uuid, hash),
+          projects: build_projects_data(workflows),
+          version: "1"
+        },
+        geolocation: %{
+          country: "US",
+          region: "North Dakota"
+        }
       }
     end
 
