@@ -29,12 +29,32 @@ defmodule ImpactTrackerWeb.Controllers.MetricsControllerTest do
       )
     end
 
-    test "sets country & region to nil if not returned", %{conn: conn} do
+    test "sets country if only country returned", %{conn: conn} do
       report = %{"foo" => "bar"}
 
       conn
       |> Plug.Conn.put_req_header("content-type", "application/json")
       |> Plug.Conn.put_req_header("x-forwarded-for", "21.21.21.21, 10.0.0.1")
+      |> post(~p"/api/metrics", Jason.encode!(report))
+
+      assert_enqueued(
+        worker: ImpactTracker.CaptureReportSubmissionWorker,
+        args: %{
+          "report" => report,
+          "geolocation" => %{
+            "country" => "CH",
+            "region" => nil
+          }
+        }
+      )
+    end
+
+    test "sets country & region to nil if not returned", %{conn: conn} do
+      report = %{"foo" => "bar"}
+
+      conn
+      |> Plug.Conn.put_req_header("content-type", "application/json")
+      |> Plug.Conn.put_req_header("x-forwarded-for", "22.22.22.22, 10.0.0.1")
       |> post(~p"/api/metrics", Jason.encode!(report))
 
       assert_enqueued(

@@ -21,6 +21,7 @@ defmodule ImpactTrackerWeb.MetricsController do
   defp geolocation_data(conn) do
     case GeoIP.lookup(conn) do
       {:ok, %{region: region, country: country}} -> {country, region}
+      {:ok, %{country: country}} -> {country, nil}
       _ -> {nil, nil}
     end
   end

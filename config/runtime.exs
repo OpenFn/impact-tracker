@@ -30,11 +30,16 @@ if config_env() == :test do
     provider: :test,
     test_results: %{
       "20.20.20.20" => %{
+        ip: "20.20.20.20",
         country: "ZA",
         region: "Western Cape"
       },
       "21.21.21.21" => %{
-        ip: "21.21.21.21"
+        ip: "21.21.21.21",
+        country: "CH"
+      },
+      "22.22.22.22" => %{
+        ip: "22.22.22.22"
       },
       default_test_result: %{
         country: "ZA",
