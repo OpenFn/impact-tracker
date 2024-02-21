@@ -5,6 +5,8 @@ defmodule ImpactTrackerWeb.MetricsController do
 
   def create(conn, params) do
     {country, region} = geolocation_data(conn)
+    Logger.info("Country #{country}")
+    Logger.info("Region #{region}")
 
     %{report: params}
     |> Map.merge(%{geolocation: %{country: country, region: region}})
