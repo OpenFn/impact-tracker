@@ -143,7 +143,6 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       build_identity_data(uuid, hash)
       |> Map.merge(%{
         operating_system: "linux",
-        operating_system_detail: "Linux fedora 6.7.4-200.fc39.x86_64 blah",
         no_of_users: 10,
         version: "2.0.0rc1"
       })
