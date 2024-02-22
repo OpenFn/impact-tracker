@@ -22,7 +22,6 @@ defmodule ImpactTracker.Submission do
     field :lightning_version, :string
     field :no_of_users, :integer
     field :operating_system, :string
-    field :operating_system_detail, :string
     field :region, :string
     field :version, :string
 
@@ -41,7 +40,6 @@ defmodule ImpactTracker.Submission do
       :lightning_version,
       :no_of_users,
       :operating_system,
-      :operating_system_detail,
       :region,
       :version
     ]
@@ -59,7 +57,6 @@ defmodule ImpactTracker.Submission do
     |> validate_required(required_attrs)
     |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
     |> validate_inclusion(:version, @supported_versions)
-    |> validate_operating_system()
     |> cast_assoc(:projects)
   end
 
@@ -70,8 +67,6 @@ defmodule ImpactTracker.Submission do
       lightning_version: attrs |> extract_attr("instance", "version"),
       no_of_users: attrs |> extract_attr("instance", "no_of_users"),
       operating_system: attrs |> extract_attr("instance", "operating_system"),
-      operating_system_detail:
-        attrs |> extract_attr("instance", "operating_system_detail"),
       projects: attrs |> extract_attr("projects"),
       region: attrs |> extract_attr("region"),
       version: attrs |> extract_attr("version")
@@ -90,12 +85,4 @@ defmodule ImpactTracker.Submission do
       nested_attrs -> nested_attrs |> Map.get(key)
     end)
   end
-
-  defp validate_operating_system(
-         changeset = %{changes: %{operating_system: "linux"}}
-       ) do
-    changeset |> validate_required(:operating_system_detail)
-  end
-
-  defp validate_operating_system(changeset), do: changeset
 end
