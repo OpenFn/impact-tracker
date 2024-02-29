@@ -29,10 +29,25 @@ defmodule ImpactTracker.Submission do
   end
 
   def new(struct, attrs, geolocation_attrs) do
+    all_attrs =
+      attrs |> Map.merge(geolocation_attrs)
+
+    struct
+    |> cast(attrs, [:version])
+    |> validate_required(:version)
+    |> validate_inclusion(:version, @supported_versions)
+    |> then(fn
+      changeset = %{valid?: true} ->
+        versioned_setup(changeset, all_attrs)
+
+      changeset ->
+        changeset
+    end)
+  end
+
+  defp versioned_setup(changeset = %{changes: %{version: "1"}}, all_attrs) do
     submission_attrs =
-      attrs
-      |> Map.merge(geolocation_attrs)
-      |> extract_submission_attrs()
+      all_attrs |> extract_submission_attrs()
 
     cast_attrs = [
       :country,
@@ -48,16 +63,14 @@ defmodule ImpactTracker.Submission do
       :generated_at,
       :lightning_version,
       :no_of_users,
-      :operating_system,
-      :version
+      :operating_system
     ]
 
-    struct
+    changeset
     |> cast(submission_attrs, cast_attrs)
     |> validate_required(required_attrs)
     |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
-    |> validate_inclusion(:version, @supported_versions)
-    |> cast_assoc(:projects)
+    |> cast_assoc(:projects, with: &Project.v1_changeset/2)
   end
 
   defp extract_submission_attrs(attrs) do

@@ -19,7 +19,7 @@ defmodule ImpactTracker.Workflow do
     timestamps()
   end
 
-  def changeset(workflow, params) do
+  def v1_changeset(workflow, params) do
     cast_attrs = [
       :cleartext_uuid,
       :hashed_uuid,

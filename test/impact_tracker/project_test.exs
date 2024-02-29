@@ -5,13 +5,13 @@ defmodule ImpactTracker.ProjectTest do
 
   alias ImpactTracker.Project
 
-  describe "changeset/2" do
+  describe "v1_changeset/2" do
     test "returns a valid changeset" do
       data = build_project_data()
 
       %{"cleartext_uuid" => cleartext_uuid, "hashed_uuid" => hashed_uuid} = data
 
-      changeset = %Project{} |> Project.changeset(data)
+      changeset = %Project{} |> Project.v1_changeset(data)
 
       assert %Changeset{valid?: true, changes: changes} = changeset
 
@@ -28,7 +28,8 @@ defmodule ImpactTracker.ProjectTest do
 
     test "validates the presence of hashed_uuid" do
       changeset =
-        %Project{} |> Project.changeset(build_project_data_sans("hashed_uuid"))
+        %Project{}
+        |> Project.v1_changeset(build_project_data_sans("hashed_uuid"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -42,14 +43,15 @@ defmodule ImpactTracker.ProjectTest do
     test "is valid even if cleartext_uuid is absent" do
       changeset =
         %Project{}
-        |> Project.changeset(build_project_data_sans("cleartext_uuid"))
+        |> Project.v1_changeset(build_project_data_sans("cleartext_uuid"))
 
       assert %Changeset{valid?: true} = changeset
     end
 
     test "validates the presence of no_of_users" do
       changeset =
-        %Project{} |> Project.changeset(build_project_data_sans("no_of_users"))
+        %Project{}
+        |> Project.v1_changeset(build_project_data_sans("no_of_users"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -62,7 +64,7 @@ defmodule ImpactTracker.ProjectTest do
 
     test "validates that no_of_users is greater than or equal to 0" do
       changeset =
-        %Project{} |> Project.changeset(build_project_data("no_of_users", -1))
+        %Project{} |> Project.v1_changeset(build_project_data("no_of_users", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -80,12 +82,12 @@ defmodule ImpactTracker.ProjectTest do
       )
 
       changeset =
-        %Project{} |> Project.changeset(build_project_data("no_of_users", 0))
+        %Project{} |> Project.v1_changeset(build_project_data("no_of_users", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
-        %Project{} |> Project.changeset(build_project_data("no_of_users", 1))
+        %Project{} |> Project.v1_changeset(build_project_data("no_of_users", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
@@ -93,7 +95,7 @@ defmodule ImpactTracker.ProjectTest do
     test "if cleartext_uuid is present, validates that the hashed_uuid matches" do
       changeset =
         %Project{}
-        |> Project.changeset(build_project_data("hashed_uuid", hash("foo")))
+        |> Project.v1_changeset(build_project_data("hashed_uuid", hash("foo")))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -103,7 +105,7 @@ defmodule ImpactTracker.ProjectTest do
     test "validates that hashed_uuid is the correct format if cleartext is absent" do
       data = build_project_data_with_hashed_uuid(correct_format_hash())
 
-      changeset = %Project{} |> Project.changeset(data)
+      changeset = %Project{} |> Project.v1_changeset(data)
       assert %Changeset{valid?: true} = changeset
 
       data =
@@ -111,7 +113,7 @@ defmodule ImpactTracker.ProjectTest do
         |> build_project_data_with_hashed_uuid()
 
       %Project{}
-      |> Project.changeset(data)
+      |> Project.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
 
       data =
@@ -119,7 +121,7 @@ defmodule ImpactTracker.ProjectTest do
         |> build_project_data_with_hashed_uuid()
 
       %Project{}
-      |> Project.changeset(data)
+      |> Project.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
 
       data =
@@ -127,7 +129,7 @@ defmodule ImpactTracker.ProjectTest do
         |> build_project_data_with_hashed_uuid()
 
       %Project{}
-      |> Project.changeset(data)
+      |> Project.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
     end
   end

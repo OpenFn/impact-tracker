@@ -5,7 +5,7 @@ defmodule ImpactTracker.SubmissionTest do
 
   alias ImpactTracker.Submission
 
-  describe ".new/2" do
+  describe ".new/3 version 1" do
     test "generates a valid changeset" do
       changeset =
         %Submission{}
