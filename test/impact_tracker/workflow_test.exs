@@ -4,13 +4,13 @@ defmodule ImpactTracker.WorkflowTest do
   alias Ecto.Changeset
   alias ImpactTracker.Workflow
 
-  describe "changeset/2" do
+  describe "v1_changeset/2" do
     test "returns a valid changeset" do
       data = build_workflow_data()
 
       %{"cleartext_uuid" => cleartext_uuid, "hashed_uuid" => hashed_uuid} = data
 
-      changeset = %Workflow{} |> Workflow.changeset(data)
+      changeset = %Workflow{} |> Workflow.v1_changeset(data)
 
       assert %Changeset{valid?: true, changes: changes} = changeset
 
@@ -28,7 +28,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "validates the presence of the hashed uuid" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data_sans("hashed_uuid"))
+        |> Workflow.v1_changeset(build_workflow_data_sans("hashed_uuid"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -42,7 +42,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "does not require the cleartext uuid to be present" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data_sans("cleartext_uuid"))
+        |> Workflow.v1_changeset(build_workflow_data_sans("cleartext_uuid"))
 
       assert %Changeset{valid?: true} = changeset
     end
@@ -50,7 +50,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "requires the no_of_jobs to be present" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data_sans("no_of_jobs"))
+        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_jobs"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -63,7 +63,8 @@ defmodule ImpactTracker.WorkflowTest do
 
     test "validates that no_of_jobs is greater than or equal to 0" do
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_jobs", -1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -81,12 +82,14 @@ defmodule ImpactTracker.WorkflowTest do
       )
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_jobs", 0))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_jobs", 1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
@@ -94,7 +97,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "requires the no_of_runs to be present" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data_sans("no_of_runs"))
+        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_runs"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -107,7 +110,8 @@ defmodule ImpactTracker.WorkflowTest do
 
     test "validates that no_of_runs is greater than or equal to 0" do
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_runs", -1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -125,12 +129,14 @@ defmodule ImpactTracker.WorkflowTest do
       )
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_runs", 0))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_runs", 1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
@@ -138,7 +144,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "requires the no_of_steps to be present" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data_sans("no_of_steps"))
+        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_steps"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -151,7 +157,8 @@ defmodule ImpactTracker.WorkflowTest do
 
     test "validates that no_of_steps is greater than or equal to 0" do
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_steps", -1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -169,12 +176,14 @@ defmodule ImpactTracker.WorkflowTest do
       )
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_steps", 0))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
-        %Workflow{} |> Workflow.changeset(build_workflow_data("no_of_steps", 1))
+        %Workflow{}
+        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
@@ -182,7 +191,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "if cleartext_uuid is present, validates that the hashed_uuid matches" do
       changeset =
         %Workflow{}
-        |> Workflow.changeset(build_workflow_data("hashed_uuid", hash("foo")))
+        |> Workflow.v1_changeset(build_workflow_data("hashed_uuid", hash("foo")))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -192,7 +201,7 @@ defmodule ImpactTracker.WorkflowTest do
     test "validates that hashed_uuid is the correct format if cleartext is absent" do
       data = build_workflow_data_with_hashed_uuid(correct_format_hash())
 
-      changeset = %Workflow{} |> Workflow.changeset(data)
+      changeset = %Workflow{} |> Workflow.v1_changeset(data)
       assert %Changeset{valid?: true} = changeset
 
       data =
@@ -200,7 +209,7 @@ defmodule ImpactTracker.WorkflowTest do
         |> build_workflow_data_with_hashed_uuid()
 
       %Workflow{}
-      |> Workflow.changeset(data)
+      |> Workflow.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
 
       data =
@@ -208,7 +217,7 @@ defmodule ImpactTracker.WorkflowTest do
         |> build_workflow_data_with_hashed_uuid()
 
       %Workflow{}
-      |> Workflow.changeset(data)
+      |> Workflow.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
 
       data =
@@ -216,7 +225,7 @@ defmodule ImpactTracker.WorkflowTest do
         |> build_workflow_data_with_hashed_uuid()
 
       %Workflow{}
-      |> Workflow.changeset(data)
+      |> Workflow.v1_changeset(data)
       |> assert_incorrectly_formatted_hash
     end
   end
