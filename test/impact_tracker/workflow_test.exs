@@ -5,9 +5,11 @@ defmodule ImpactTracker.WorkflowTest do
   alias ImpactTracker.Workflow
 
   describe "v1_changeset/2" do
-    test "returns a valid changeset" do
-      data = build_workflow_data()
+    setup do
+      %{data: build_workflow_data("1")}
+    end
 
+    test "returns a valid changeset", %{data: data} do
       %{"cleartext_uuid" => cleartext_uuid, "hashed_uuid" => hashed_uuid} = data
 
       changeset = %Workflow{} |> Workflow.v1_changeset(data)
@@ -25,10 +27,10 @@ defmodule ImpactTracker.WorkflowTest do
       )
     end
 
-    test "validates the presence of the hashed uuid" do
+    test "validates the presence of the hashed uuid", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data_sans("hashed_uuid"))
+        |> Workflow.v1_changeset(data |> remove_data("hashed_uuid"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -39,18 +41,18 @@ defmodule ImpactTracker.WorkflowTest do
       )
     end
 
-    test "does not require the cleartext uuid to be present" do
+    test "does not require the cleartext uuid to be present", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data_sans("cleartext_uuid"))
+        |> Workflow.v1_changeset(data |> remove_data("cleartext_uuid"))
 
       assert %Changeset{valid?: true} = changeset
     end
 
-    test "requires the no_of_jobs to be present" do
+    test "requires the no_of_jobs to be present", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_jobs"))
+        |> Workflow.v1_changeset(data |> remove_data("no_of_jobs"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -61,10 +63,10 @@ defmodule ImpactTracker.WorkflowTest do
       )
     end
 
-    test "validates that no_of_jobs is greater than or equal to 0" do
+    test "validates that no_of_jobs >= 0", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", -1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_jobs", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -83,21 +85,21 @@ defmodule ImpactTracker.WorkflowTest do
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", 0))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_jobs", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_jobs", 1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_jobs", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
 
-    test "requires the no_of_runs to be present" do
+    test "requires the no_of_runs to be present", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_runs"))
+        |> Workflow.v1_changeset(data |> remove_data("no_of_runs"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -108,10 +110,10 @@ defmodule ImpactTracker.WorkflowTest do
       )
     end
 
-    test "validates that no_of_runs is greater than or equal to 0" do
+    test "validates that no_of_runs is >= to 0", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", -1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_runs", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -130,21 +132,21 @@ defmodule ImpactTracker.WorkflowTest do
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", 0))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_runs", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_runs", 1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_runs", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
 
-    test "requires the no_of_steps to be present" do
+    test "requires the no_of_steps to be present", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data_sans("no_of_steps"))
+        |> Workflow.v1_changeset(data |> remove_data("no_of_steps"))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -155,10 +157,10 @@ defmodule ImpactTracker.WorkflowTest do
       )
     end
 
-    test "validates that no_of_steps is greater than or equal to 0" do
+    test "validates that no_of_steps is >= 0", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", -1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_steps", -1))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
@@ -177,60 +179,340 @@ defmodule ImpactTracker.WorkflowTest do
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", 0))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_steps", 0))
 
       assert %Changeset{valid?: true} = changeset
 
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("no_of_steps", 1))
+        |> Workflow.v1_changeset(data |> modify_data("no_of_steps", 1))
 
       assert %Changeset{valid?: true} = changeset
     end
 
-    test "if cleartext_uuid is present, validates that the hashed_uuid matches" do
+    test "cleartext_uuid is present, validates hashed_uuid", %{data: data} do
       changeset =
         %Workflow{}
-        |> Workflow.v1_changeset(build_workflow_data("hashed_uuid", hash("foo")))
+        |> Workflow.v1_changeset(data |> modify_data("hashed_uuid", hash("foo")))
 
       assert %Changeset{valid?: false, errors: errors} = changeset
 
       assert [hashed_uuid: {"is not a hash of cleartext uuid", []}] = errors
     end
 
-    test "validates that hashed_uuid is the correct format if cleartext is absent" do
-      data = build_workflow_data_with_hashed_uuid(correct_format_hash())
+    test "cleartext_uuid is absent, validates hashed_uuid", %{data: data} do
+      with_correct_hash =
+        data
+        |> remove_clear_set_hashed(correct_format_hash())
 
-      changeset = %Workflow{} |> Workflow.v1_changeset(data)
+      changeset = %Workflow{} |> Workflow.v1_changeset(with_correct_hash)
       assert %Changeset{valid?: true} = changeset
 
-      data =
-        short_1_char_hash()
-        |> build_workflow_data_with_hashed_uuid()
+      truncated_hash =
+        data
+        |> remove_clear_set_hashed(short_1_char_hash())
 
       %Workflow{}
-      |> Workflow.v1_changeset(data)
+      |> Workflow.v1_changeset(truncated_hash)
       |> assert_incorrectly_formatted_hash
 
-      data =
-        extra_1_char_hash()
-        |> build_workflow_data_with_hashed_uuid()
+      extended_hash =
+        data
+        |> remove_clear_set_hashed(extra_1_char_hash())
 
       %Workflow{}
-      |> Workflow.v1_changeset(data)
+      |> Workflow.v1_changeset(extended_hash)
       |> assert_incorrectly_formatted_hash
 
-      data =
-        non_alphanum_char_hash()
-        |> build_workflow_data_with_hashed_uuid()
+      bad_chars_hash =
+        data
+        |> remove_clear_set_hashed(non_alphanum_char_hash())
 
       %Workflow{}
-      |> Workflow.v1_changeset(data)
+      |> Workflow.v1_changeset(bad_chars_hash)
       |> assert_incorrectly_formatted_hash
     end
   end
 
-  defp build_workflow_data do
+  describe "v2_changeset/2" do
+    setup do
+      %{data: build_workflow_data("2")}
+    end
+
+    test "returns a valid changeset", %{data: data} do
+      %{"cleartext_uuid" => cleartext_uuid, "hashed_uuid" => hashed_uuid} = data
+
+      changeset = %Workflow{} |> Workflow.v2_changeset(data)
+
+      assert %Changeset{valid?: true, changes: changes} = changeset
+
+      assert(
+        %{
+          cleartext_uuid: ^cleartext_uuid,
+          hashed_uuid: ^hashed_uuid,
+          no_of_active_jobs: 9,
+          no_of_jobs: 10,
+          no_of_runs: 2,
+          no_of_steps: 3
+        } = changes
+      )
+    end
+
+    test "validates the presence of the hashed uuid", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("hashed_uuid"))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          hashed_uuid: {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "does not require the cleartext uuid to be present", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("cleartext_uuid"))
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
+    test "requires the no_of_jobs to be present", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("no_of_jobs"))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_jobs: {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "validates that no_of_jobs >= 0", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_jobs", -1))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_jobs: {
+            "must be greater than or equal to %{number}",
+            [
+              {:validation, :number},
+              {:kind, :greater_than_or_equal_to},
+              {:number, 0}
+            ]
+          }
+        ] = errors
+      )
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_jobs", 0))
+
+      assert %Changeset{valid?: true} = changeset
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_jobs", 1))
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
+    test "requires the no_of_active_jobs to be present", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("no_of_active_jobs"))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_active_jobs: {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "validates that no_of_active_jobs >= 0", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_active_jobs", -1))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_active_jobs: {
+            "must be greater than or equal to %{number}",
+            [
+              {:validation, :number},
+              {:kind, :greater_than_or_equal_to},
+              {:number, 0}
+            ]
+          }
+        ] = errors
+      )
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_active_jobs", 0))
+
+      assert %Changeset{valid?: true} = changeset
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_active_jobs", 1))
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
+    test "requires the no_of_runs to be present", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("no_of_runs"))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_runs: {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "validates that no_of_runs is >= to 0", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_runs", -1))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_runs: {
+            "must be greater than or equal to %{number}",
+            [
+              {:validation, :number},
+              {:kind, :greater_than_or_equal_to},
+              {:number, 0}
+            ]
+          }
+        ] = errors
+      )
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_runs", 0))
+
+      assert %Changeset{valid?: true} = changeset
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_runs", 1))
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
+    test "requires the no_of_steps to be present", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> remove_data("no_of_steps"))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_steps: {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "validates that no_of_steps is >= 0", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_steps", -1))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_steps: {
+            "must be greater than or equal to %{number}",
+            [
+              {:validation, :number},
+              {:kind, :greater_than_or_equal_to},
+              {:number, 0}
+            ]
+          }
+        ] = errors
+      )
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_steps", 0))
+
+      assert %Changeset{valid?: true} = changeset
+
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("no_of_steps", 1))
+
+      assert %Changeset{valid?: true} = changeset
+    end
+
+    test "cleartext_uuid is present, validates hashed_uuid", %{data: data} do
+      changeset =
+        %Workflow{}
+        |> Workflow.v2_changeset(data |> modify_data("hashed_uuid", hash("foo")))
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [hashed_uuid: {"is not a hash of cleartext uuid", []}] = errors
+    end
+
+    test "cleartext_uuid is absent, validates hashed_uuid", %{data: data} do
+      with_correct_hash =
+        data
+        |> remove_clear_set_hashed(correct_format_hash())
+
+      changeset = %Workflow{} |> Workflow.v2_changeset(with_correct_hash)
+      assert %Changeset{valid?: true} = changeset
+
+      truncated_hash =
+        data
+        |> remove_clear_set_hashed(short_1_char_hash())
+
+      %Workflow{}
+      |> Workflow.v2_changeset(truncated_hash)
+      |> assert_incorrectly_formatted_hash
+
+      extended_hash =
+        data
+        |> remove_clear_set_hashed(extra_1_char_hash())
+
+      %Workflow{}
+      |> Workflow.v2_changeset(extended_hash)
+      |> assert_incorrectly_formatted_hash
+
+      bad_chars_hash =
+        data
+        |> remove_clear_set_hashed(non_alphanum_char_hash())
+
+      %Workflow{}
+      |> Workflow.v2_changeset(bad_chars_hash)
+      |> assert_incorrectly_formatted_hash
+    end
+  end
+
+  defp build_workflow_data(_version = "1") do
     uuid = generate_uuid()
 
     %{
@@ -242,16 +524,30 @@ defmodule ImpactTracker.WorkflowTest do
     }
   end
 
-  defp build_workflow_data(key, value) do
-    build_workflow_data() |> Map.merge(%{key => value})
+  defp build_workflow_data(_version = "2") do
+    uuid = generate_uuid()
+
+    %{
+      "cleartext_uuid" => uuid,
+      "hashed_uuid" => hash(uuid),
+      "no_of_active_jobs" => 9,
+      "no_of_jobs" => 10,
+      "no_of_runs" => 2,
+      "no_of_steps" => 3
+    }
   end
 
-  defp build_workflow_data_sans(key) do
-    build_workflow_data() |> Map.delete(key)
+  defp modify_data(data, key, value) do
+    data |> Map.merge(%{key => value})
   end
 
-  defp build_workflow_data_with_hashed_uuid(hashed_uuid) do
-    build_workflow_data_sans("cleartext_uuid")
+  defp remove_data(data, key) do
+    data |> Map.delete(key)
+  end
+
+  defp remove_clear_set_hashed(data, hashed_uuid) do
+    data
+    |> remove_data("cleartext_uuid")
     |> Map.merge(%{"hashed_uuid" => hashed_uuid})
   end
 
