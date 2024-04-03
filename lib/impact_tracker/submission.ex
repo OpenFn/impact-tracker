@@ -105,6 +105,10 @@ defmodule ImpactTracker.Submission do
     |> validate_required(required_attrs)
     |> validate_number(:no_of_active_users, greater_than_or_equal_to: 0)
     |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
+    |> unique_constraint(
+      [:instance_id, :report_date],
+      message: "instance already has a submission for this date"
+    )
     |> cast_assoc(:projects, with: &Project.v2_changeset/2)
   end
 
