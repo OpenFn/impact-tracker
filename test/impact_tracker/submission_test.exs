@@ -564,6 +564,36 @@ defmodule ImpactTracker.SubmissionTest do
 
       assert %Changeset{valid?: true} = changeset
     end
+
+    test "creates invalid changeset - report date exists for instance", %{
+      data: data
+    } do
+      instance =
+        insert(
+          :instance,
+          submissions: [build(:submission, report_date: ~D[2024-02-05])]
+        )
+
+      result =
+        instance
+        |> Ecto.build_assoc(:submissions)
+        |> Submission.new(data, build_geolocation_data())
+        |> Repo.insert()
+
+      assert {:error, changeset} = result
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [
+               instance_id: {
+                 "instance already has a submission for this date",
+                 [
+                   constraint: :unique,
+                   constraint_name: "submissions_instance_id_report_date_index"
+                 ]
+               }
+             ] = errors
+    end
   end
 
   defp build_submission_data(version = "1") do
