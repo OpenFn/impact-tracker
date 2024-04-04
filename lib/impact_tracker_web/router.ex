@@ -28,7 +28,7 @@ defmodule ImpactTrackerWeb.Router do
     end
   end
 
-  forward "/health_check", ImpactTrackerWeb.HealthCheck
+  forward "/", ImpactTrackerWeb.HealthCheck
 end
 
 defmodule ImpactTrackerWeb.HealthCheck do
