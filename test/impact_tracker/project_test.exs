@@ -5,160 +5,9 @@ defmodule ImpactTracker.ProjectTest do
 
   alias ImpactTracker.Project
 
-  describe "v1_changeset/2" do
-    setup do
-      %{data: build_project_data("1")}
-    end
-
-    test "returns a valid changeset", %{data: data} do
-      %{"cleartext_uuid" => cleartext_uuid, "hashed_uuid" => hashed_uuid} = data
-
-      changeset = %Project{} |> Project.v1_changeset(data)
-
-      assert %Changeset{valid?: true, changes: changes} = changeset
-
-      assert(
-        %{
-          cleartext_uuid: ^cleartext_uuid,
-          hashed_uuid: ^hashed_uuid,
-          no_of_users: 10
-        } = changes
-      )
-
-      assert changes.workflows |> Enum.count() == 2
-    end
-
-    test "creates the associated workflows", %{data: data} do
-      changeset = %Project{} |> Project.v1_changeset(data)
-
-      %{changes: %{workflows: workflows}} = changeset
-
-      assert [workflow | [_other_workflow]] = workflows
-
-      %{changes: changes} = workflow
-
-      refute changes |> Map.has_key?(:no_of_active_jobs)
-    end
-
-    test "validates the presence of hashed_uuid", %{data: data} do
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> remove_data("hashed_uuid"))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert(
-        [
-          hashed_uuid: {"can't be blank", [{:validation, :required}]}
-        ] = errors
-      )
-    end
-
-    test "is valid even if cleartext_uuid is absent", %{data: data} do
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> remove_data("cleartext_uuid"))
-
-      assert %Changeset{valid?: true} = changeset
-    end
-
-    test "validates the presence of no_of_users", %{data: data} do
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> remove_data("no_of_users"))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert(
-        [
-          no_of_users: {"can't be blank", [{:validation, :required}]}
-        ] = errors
-      )
-    end
-
-    test "validates that no_of_users >= 0", %{data: data} do
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> modify_data("no_of_users", -1))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert(
-        [
-          no_of_users: {
-            "must be greater than or equal to %{number}",
-            [
-              {:validation, :number},
-              {:kind, :greater_than_or_equal_to},
-              {:number, 0}
-            ]
-          }
-        ] = errors
-      )
-
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> modify_data("no_of_users", 0))
-
-      assert %Changeset{valid?: true} = changeset
-
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> modify_data("no_of_users", 1))
-
-      assert %Changeset{valid?: true} = changeset
-    end
-
-    test "validate hashed_uuid is a hash of cleartext", %{data: data} do
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(data |> modify_data("hashed_uuid", hash("foo")))
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [hashed_uuid: {"is not a hash of cleartext uuid", []}] = errors
-    end
-
-    test "validate hashed_uuid format if cleartext absent", %{data: data} do
-      with_correct_hash =
-        data
-        |> remove_clear_set_hashed(correct_format_hash())
-
-      changeset =
-        %Project{}
-        |> Project.v1_changeset(with_correct_hash)
-
-      assert %Changeset{valid?: true} = changeset
-
-      truncated_hash =
-        data
-        |> remove_clear_set_hashed(short_1_char_hash())
-
-      %Project{}
-      |> Project.v1_changeset(truncated_hash)
-      |> assert_incorrectly_formatted_hash
-
-      extended_hash =
-        data
-        |> remove_clear_set_hashed(extra_1_char_hash())
-
-      %Project{}
-      |> Project.v1_changeset(extended_hash)
-      |> assert_incorrectly_formatted_hash
-
-      bad_chars_hash =
-        data
-        |> remove_clear_set_hashed(non_alphanum_char_hash())
-
-      %Project{}
-      |> Project.v1_changeset(bad_chars_hash)
-      |> assert_incorrectly_formatted_hash
-    end
-  end
-
   describe "v2_changeset/2" do
     setup do
-      %{data: build_project_data("2")}
+      %{data: build_project_data()}
     end
 
     test "returns a valid changeset", %{data: data} do
@@ -355,18 +204,7 @@ defmodule ImpactTracker.ProjectTest do
     end
   end
 
-  defp build_project_data(version = "1") do
-    uuid = generate_uuid()
-
-    %{
-      "cleartext_uuid" => uuid,
-      "hashed_uuid" => hash(uuid),
-      "no_of_users" => 10,
-      "workflows" => build_workflow_data(version)
-    }
-  end
-
-  defp build_project_data(version = "2") do
+  defp build_project_data do
     uuid = generate_uuid()
 
     %{
@@ -374,35 +212,11 @@ defmodule ImpactTracker.ProjectTest do
       "hashed_uuid" => hash(uuid),
       "no_of_active_users" => 7,
       "no_of_users" => 10,
-      "workflows" => build_workflow_data(version)
+      "workflows" => build_workflow_data()
     }
   end
 
-  defp build_workflow_data(_version = "1") do
-    uuid_1 = generate_uuid()
-    uuid_2 = generate_uuid()
-
-    [
-      %{
-        "cleartext_uuid" => uuid_1,
-        "hashed_uuid" => hash(uuid_1),
-        "no_of_active_jobs" => 0,
-        "no_of_jobs" => 1,
-        "no_of_runs" => 2,
-        "no_of_steps" => 3
-      },
-      %{
-        "cleartext_uuid" => uuid_2,
-        "hashed_uuid" => hash(uuid_2),
-        "no_of_active_jobs" => 3,
-        "no_of_jobs" => 4,
-        "no_of_runs" => 5,
-        "no_of_steps" => 6
-      }
-    ]
-  end
-
-  defp build_workflow_data(_version = "2") do
+  defp build_workflow_data do
     uuid_1 = generate_uuid()
     uuid_2 = generate_uuid()
 

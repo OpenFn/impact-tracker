@@ -20,26 +20,6 @@ defmodule ImpactTracker.Workflow do
     timestamps()
   end
 
-  def v1_changeset(workflow, params) do
-    cast_attrs = [
-      :cleartext_uuid,
-      :hashed_uuid,
-      :no_of_jobs,
-      :no_of_runs,
-      :no_of_steps
-    ]
-
-    required_attrs = [:hashed_uuid, :no_of_jobs, :no_of_runs, :no_of_steps]
-
-    workflow
-    |> cast(params, cast_attrs)
-    |> validate_required(required_attrs)
-    |> validate_number(:no_of_jobs, greater_than_or_equal_to: 0)
-    |> validate_number(:no_of_runs, greater_than_or_equal_to: 0)
-    |> validate_number(:no_of_steps, greater_than_or_equal_to: 0)
-    |> validate_hashed_uuid()
-  end
-
   def v2_changeset(workflow, params) do
     cast_attrs = [
       :cleartext_uuid,

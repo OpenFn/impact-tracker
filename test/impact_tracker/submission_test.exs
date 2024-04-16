@@ -5,247 +5,9 @@ defmodule ImpactTracker.SubmissionTest do
 
   alias ImpactTracker.Submission
 
-  describe ".new/3 version 1" do
-    setup do
-      %{data: build_submission_data("1")}
-    end
-
-    test "generates a valid changeset", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(data, build_geolocation_data())
-
-      {:ok, generated_at, 0} =
-        DateTime.from_iso8601("2024-02-06T12:50:37.245897Z")
-
-      assert %Changeset{valid?: true, changes: changes} = changeset
-
-      assert %{
-               country: "US",
-               generated_at: ^generated_at,
-               lightning_version: "2.0.0rc1",
-               no_of_users: 10,
-               operating_system: "linux",
-               region: "Iowa",
-               version: "1"
-             } = changes
-
-      assert changes.projects |> Enum.count() == 2
-    end
-
-    test "generates valid changesets for the projects", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(data, build_geolocation_data())
-
-      %{changes: %{projects: projects}} = changeset
-
-      assert [%{changes: project_changes} | [_other_project]] = projects
-
-      refute Map.has_key?(project_changes, :no_of_active_users)
-    end
-
-    test "vaidates presence of `instance`", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("instance"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false} = changeset
-    end
-
-    test "validates presence of `generated_at`", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("generated_at"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               generated_at: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates presence of `lightning_version`", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("instance", "version"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               lightning_version: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates presence of `no_of_users`", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("instance", "no_of_users"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               no_of_users: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates that no_of_users is >= 0", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> modify_submission_data("instance", "no_of_users", -1),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               no_of_users: {
-                 "must be greater than or equal to %{number}",
-                 [
-                   {:validation, :number},
-                   {:kind, :greater_than_or_equal_to},
-                   {:number, 0}
-                 ]
-               }
-             ] = errors
-
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> modify_submission_data("instance", "no_of_users", 0),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: true} = changeset
-
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> modify_submission_data("instance", "no_of_users", 1),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: true} = changeset
-    end
-
-    test "validates presence of operating_system", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("instance", "operating_system"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               operating_system: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates the presence of version", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("version"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               version: {
-                 "can't be blank",
-                 [{:validation, :required}]
-               }
-             ] = errors
-    end
-
-    test "validates the submission version is supported", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> modify_submission_data("version", "1001"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               version:
-                 {"is invalid", [{:validation, :inclusion}, {:enum, ["1", "2"]}]}
-             ] = errors
-    end
-
-    test "validates presence of projects", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(
-          data |> remove_data("projects"),
-          build_geolocation_data()
-        )
-
-      assert %Changeset{valid?: false, errors: errors} = changeset
-
-      assert [
-               projects: {
-                 "is invalid",
-                 [{:validation, :assoc}, {:type, {:array, :map}}]
-               }
-             ] = errors
-    end
-
-    test "overwrites geolocation data in report data", %{data: data} do
-      report_data =
-        data
-        |> Map.merge(%{"country" => "ZA", "region" => "Gauteng"})
-
-      changeset =
-        %Submission{}
-        |> Submission.new(report_data, build_geolocation_data())
-
-      assert %Changeset{valid?: true, changes: changes} = changeset
-
-      assert %{country: "US", region: "Iowa"} = changes
-    end
-
-    test "it does not require geolocation data", %{data: data} do
-      changeset =
-        %Submission{}
-        |> Submission.new(data, build_nil_geolocation_data())
-
-      assert %Changeset{valid?: true} = changeset
-    end
-  end
-
   describe ".new/3 version 2" do
     setup do
-      %{data: build_submission_data("2")}
+      %{data: build_submission_data()}
     end
 
     test "generates a valid changeset for the submission", %{data: data} do
@@ -596,20 +358,7 @@ defmodule ImpactTracker.SubmissionTest do
     end
   end
 
-  defp build_submission_data(version = "1") do
-    %{
-      "generated_at" => "2024-02-06T12:50:37.245897Z",
-      "instance" => %{
-        "operating_system" => "linux",
-        "no_of_users" => 10,
-        "version" => "2.0.0rc1"
-      },
-      "projects" => build_project_data(version),
-      "version" => version
-    }
-  end
-
-  defp build_submission_data(version = "2") do
+  defp build_submission_data do
     %{
       "generated_at" => "2024-02-06T12:50:37.245897Z",
       "instance" => %{
@@ -618,9 +367,9 @@ defmodule ImpactTracker.SubmissionTest do
         "no_of_users" => 10,
         "version" => "2.0.0rc1"
       },
-      "projects" => build_project_data(version),
+      "projects" => build_project_data(),
       "report_date" => "2024-02-05",
-      "version" => version
+      "version" => "2"
     }
   end
 
@@ -648,24 +397,7 @@ defmodule ImpactTracker.SubmissionTest do
 
   defp build_nil_geolocation_data, do: %{"country" => nil, "region" => nil}
 
-  defp build_project_data("1") do
-    [
-      %{
-        "cleartext_uuid" => nil,
-        "hashed_uuid" => hash("foo"),
-        "no_of_users" => 10,
-        "workflows" => []
-      },
-      %{
-        "cleartext_uuid" => nil,
-        "hashed_uuid" => hash("bar"),
-        "no_of_users" => 30,
-        "workflows" => []
-      }
-    ]
-  end
-
-  defp build_project_data("2") do
+  defp build_project_data do
     [
       %{
         "cleartext_uuid" => nil,

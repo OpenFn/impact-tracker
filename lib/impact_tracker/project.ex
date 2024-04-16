@@ -21,21 +21,6 @@ defmodule ImpactTracker.Project do
     timestamps()
   end
 
-  def v1_changeset(project, params) do
-    cast_attrs = [:cleartext_uuid, :hashed_uuid, :no_of_users]
-
-    required_attrs = [:hashed_uuid, :no_of_users]
-
-    project
-    |> cast(params, cast_attrs)
-    |> validate_required(required_attrs)
-    |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
-    |> validate_hashed_uuid()
-    # Note - at the moment, there does not appear to be a cost-effective way
-    # to validate that the `workflows` element is present
-    |> cast_assoc(:workflows, with: &Workflow.v1_changeset/2)
-  end
-
   def v2_changeset(project, params) do
     cast_attrs = [
       :cleartext_uuid,

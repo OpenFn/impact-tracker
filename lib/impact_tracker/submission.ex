@@ -47,34 +47,6 @@ defmodule ImpactTracker.Submission do
     end)
   end
 
-  defp versioned_setup(changeset = %{changes: %{version: "1"}}, all_attrs) do
-    submission_attrs =
-      all_attrs |> extract_submission_attrs()
-
-    cast_attrs = [
-      :country,
-      :generated_at,
-      :lightning_version,
-      :no_of_users,
-      :operating_system,
-      :region,
-      :version
-    ]
-
-    required_attrs = [
-      :generated_at,
-      :lightning_version,
-      :no_of_users,
-      :operating_system
-    ]
-
-    changeset
-    |> cast(submission_attrs, cast_attrs)
-    |> validate_required(required_attrs)
-    |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
-    |> cast_assoc(:projects, with: &Project.v1_changeset/2)
-  end
-
   defp versioned_setup(changeset = %{changes: %{version: "2"}}, all_attrs) do
     submission_attrs =
       all_attrs |> extract_submission_attrs()
