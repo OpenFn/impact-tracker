@@ -130,7 +130,8 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
           generated_at: "2024-02-06T12:50:37.245897Z",
           instance: build_instance_data(uuid, hash),
           projects: build_projects_data(workflows),
-          version: "1"
+          report_date: ~D[2024-02-05],
+          version: "2"
         },
         geolocation: %{
           country: "US",
@@ -143,6 +144,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
       build_identity_data(uuid, hash)
       |> Map.merge(%{
         operating_system: "linux",
+        no_of_active_users: 8,
         no_of_users: 10,
         version: "2.0.0rc1"
       })
@@ -158,6 +160,7 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     defp build_projects_data(workflows) do
       [
         %{
+          no_of_active_users: 3,
           no_of_users: 10,
           workflows: workflows
         }
@@ -168,9 +171,10 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     defp build_workflows_data do
       [
         %{
-          no_of_jobs: 1,
-          no_of_runs: 2,
-          no_of_steps: 3
+          no_of_active_jobs: 3,
+          no_of_jobs: 4,
+          no_of_runs: 5,
+          no_of_steps: 6
         }
         |> Map.merge(build_identity_data(nil, build_hash("foo")))
       ]
@@ -179,9 +183,10 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     defp build_broken_workflows_data do
       [
         %{
-          no_of_jobs: -1,
-          no_of_runs: 2,
-          no_of_steps: 3
+          no_of_active_jobs: -3,
+          no_of_jobs: 4,
+          no_of_runs: 5,
+          no_of_steps: 6
         }
         |> Map.merge(build_identity_data(nil, build_hash("foo")))
       ]
