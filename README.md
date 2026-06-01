@@ -1,18 +1,40 @@
 # ImpactTracker
 
-To start your Phoenix server:
+## Local Development
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+You will need an instance of Postgresql that is available locally (either running on your
+machine or in a container).
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Copy `.env.example` to `.env` and update where necessary. You can then use these env variables as
+follows:
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+```bash
+env $(cat .env | grep -v '#' | xargs) mix ecto.migrate
+env $(cat .env | grep -v '#' | xargs) iex -S mix phx.server
+```
 
-## Learn more
+### Checking integration with Lightning
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+If you are running Lightning locally, you can use the docker compose setup to run IT locally as well.
+
+```bash
+# Only needed for the initial setup - generate certs for use by the postgres container
+./local_testing/generate_certs.sh
+```
+
+```bash
+# Start ImpactTracker up - it will listen on port 4001
+docker compose -f local_testing/docker-compose.yml up --build -d
+```
+
+Configure you local Lightning instance to use http://127.0.0.1:4000 for usage tracking and you will
+be able to submit to this instance.
+
+## Running tests
+
+Copy `.env.example` to `.env.test` and update where necessary. You can then use these env variables
+as follows:
+
+```bash
+env $(cat .env.test | grep -v '#' | xargs) mix test
+```

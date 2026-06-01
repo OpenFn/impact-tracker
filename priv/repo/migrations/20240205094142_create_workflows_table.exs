@@ -17,7 +17,7 @@ defmodule ImpactTracker.Repo.Migrations.CreateWorkflowsTable do
       timestamps()
     end
 
-    create index(:workflows, :hashed_uuid, type: :hash)
-    create index(:workflows, :cleartext_uuid, type: :hash)
+    create index(:workflows, [:hashed_uuid])
+    create index(:workflows, [:cleartext_uuid])
   end
 end

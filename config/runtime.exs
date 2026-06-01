@@ -66,8 +66,7 @@ if config_env() == :prod do
     if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :impact_tracker, ImpactTracker.Repo,
-    ssl: true,
-    ssl_opts: [
+    ssl: [
       verify: :verify_none
     ],
     url: database_url,
