@@ -10,7 +10,7 @@ defmodule ImpactTracker.Submission do
   alias ImpactTracker.Project
 
   # When adding new versions, update this.
-  @supported_versions ["1", "2"]
+  @supported_versions ["1", "2", "3"]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "submissions" do
@@ -21,6 +21,7 @@ defmodule ImpactTracker.Submission do
     field :instance_id, Ecto.UUID
     field :lightning_version, :string
     field :no_of_active_users, :integer
+    field :no_of_monthly_active_users, :integer
     field :no_of_users, :integer
     field :operating_system, :string
     field :report_date, :date
@@ -48,41 +49,69 @@ defmodule ImpactTracker.Submission do
   end
 
   defp versioned_setup(changeset = %{changes: %{version: "2"}}, all_attrs) do
+    build_submission(changeset, all_attrs, include_monthly_active_users: false)
+  end
+
+  # Version 3 adds a 30-day `no_of_monthly_active_users` (true MAU) alongside
+  # the existing 90-day `no_of_active_users`, at both instance and project level.
+  defp versioned_setup(changeset = %{changes: %{version: "3"}}, all_attrs) do
+    build_submission(changeset, all_attrs, include_monthly_active_users: true)
+  end
+
+  defp build_submission(changeset, all_attrs,
+         include_monthly_active_users: include_mau
+       ) do
     submission_attrs =
       all_attrs |> extract_submission_attrs()
 
-    cast_attrs = [
-      :country,
-      :generated_at,
-      :lightning_version,
-      :no_of_active_users,
-      :no_of_users,
-      :operating_system,
-      :region,
-      :report_date,
-      :version
-    ]
+    mau_attrs = if include_mau, do: [:no_of_monthly_active_users], else: []
 
-    required_attrs = [
-      :generated_at,
-      :lightning_version,
-      :no_of_active_users,
-      :no_of_users,
-      :operating_system,
-      :report_date
-    ]
+    cast_attrs =
+      [
+        :country,
+        :generated_at,
+        :lightning_version,
+        :no_of_active_users,
+        :no_of_users,
+        :operating_system,
+        :region,
+        :report_date,
+        :version
+      ] ++ mau_attrs
+
+    required_attrs =
+      [
+        :generated_at,
+        :lightning_version,
+        :no_of_active_users,
+        :no_of_users,
+        :operating_system,
+        :report_date
+      ] ++ mau_attrs
+
+    project_changeset =
+      if include_mau, do: &Project.v3_changeset/2, else: &Project.v2_changeset/2
 
     changeset
     |> cast(submission_attrs, cast_attrs)
     |> validate_required(required_attrs)
     |> validate_number(:no_of_active_users, greater_than_or_equal_to: 0)
     |> validate_number(:no_of_users, greater_than_or_equal_to: 0)
+    |> maybe_validate_monthly_active_users(include_mau)
     |> unique_constraint(
       [:instance_id, :report_date],
       message: "instance already has a submission for this date"
     )
-    |> cast_assoc(:projects, with: &Project.v2_changeset/2)
+    |> cast_assoc(:projects, with: project_changeset)
   end
+
+  defp maybe_validate_monthly_active_users(changeset, true) do
+    validate_number(changeset, :no_of_monthly_active_users,
+      greater_than_or_equal_to: 0
+    )
+  end
+
+  defp maybe_validate_monthly_active_users(changeset, false), do: changeset
 
   defp extract_submission_attrs(attrs) do
     %{
@@ -91,6 +120,8 @@ defmodule ImpactTracker.Submission do
       lightning_version: attrs |> extract_attr("instance", "version"),
       no_of_active_users:
         attrs |> extract_attr("instance", "no_of_active_users"),
+      no_of_monthly_active_users:
+        attrs |> extract_attr("instance", "no_of_monthly_active_users"),
       no_of_users: attrs |> extract_attr("instance", "no_of_users"),
       operating_system: attrs |> extract_attr("instance", "operating_system"),
       projects: attrs |> extract_attr("projects"),

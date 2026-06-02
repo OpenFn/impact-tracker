@@ -283,7 +283,8 @@ defmodule ImpactTracker.SubmissionTest do
 
       assert [
                version:
-                 {"is invalid", [{:validation, :inclusion}, {:enum, ["1", "2"]}]}
+                 {"is invalid",
+                  [{:validation, :inclusion}, {:enum, ["1", "2", "3"]}]}
              ] = errors
     end
 
@@ -358,6 +359,95 @@ defmodule ImpactTracker.SubmissionTest do
     end
   end
 
+  describe ".new/3 version 3" do
+    setup do
+      %{data: build_v3_submission_data()}
+    end
+
+    test "generates a valid changeset for the submission", %{data: data} do
+      changeset =
+        %Submission{}
+        |> Submission.new(data, build_geolocation_data())
+
+      assert %Changeset{valid?: true, changes: changes} = changeset
+
+      assert(
+        %{
+          no_of_active_users: 7,
+          no_of_monthly_active_users: 5,
+          no_of_users: 10,
+          version: "3"
+        } = changes
+      )
+    end
+
+    test "captures no_of_monthly_active_users for the projects", %{data: data} do
+      changeset =
+        %Submission{}
+        |> Submission.new(data, build_geolocation_data())
+
+      %{changes: %{projects: projects}} = changeset
+
+      assert(
+        [
+          %{changes: %{no_of_monthly_active_users: 2}},
+          %{changes: %{no_of_monthly_active_users: 3}}
+        ] = projects
+      )
+    end
+
+    test "validates presence of `no_of_monthly_active_users`", %{data: data} do
+      changeset =
+        %Submission{}
+        |> Submission.new(
+          data |> remove_data("instance", "no_of_monthly_active_users"),
+          build_geolocation_data()
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [
+               no_of_monthly_active_users: {
+                 "can't be blank",
+                 [{:validation, :required}]
+               }
+             ] = errors
+    end
+
+    test "validates that no_of_monthly_active_users is >= 0", %{data: data} do
+      changeset =
+        %Submission{}
+        |> Submission.new(
+          data
+          |> modify_submission_data("instance", "no_of_monthly_active_users", -1),
+          build_geolocation_data()
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [
+               no_of_monthly_active_users: {
+                 "must be greater than or equal to %{number}",
+                 [
+                   {:validation, :number},
+                   {:kind, :greater_than_or_equal_to},
+                   {:number, 0}
+                 ]
+               }
+             ] = errors
+
+      changeset =
+        %Submission{}
+        |> Submission.new(
+          data
+          |> modify_submission_data("instance", "no_of_monthly_active_users", 0),
+          build_geolocation_data()
+        )
+
+      assert %Changeset{valid?: true} = changeset
+    end
+  end
+
   defp build_submission_data do
     %{
       "generated_at" => "2024-02-06T12:50:37.245897Z",
@@ -370,6 +460,22 @@ defmodule ImpactTracker.SubmissionTest do
       "projects" => build_project_data(),
       "report_date" => "2024-02-05",
       "version" => "2"
+    }
+  end
+
+  defp build_v3_submission_data do
+    %{
+      "generated_at" => "2024-02-06T12:50:37.245897Z",
+      "instance" => %{
+        "operating_system" => "linux",
+        "no_of_active_users" => 7,
+        "no_of_monthly_active_users" => 5,
+        "no_of_users" => 10,
+        "version" => "2.0.0rc1"
+      },
+      "projects" => build_v3_project_data(),
+      "report_date" => "2024-02-05",
+      "version" => "3"
     }
   end
 
@@ -410,6 +516,27 @@ defmodule ImpactTracker.SubmissionTest do
         "cleartext_uuid" => nil,
         "hashed_uuid" => hash("bar"),
         "no_of_active_users" => 4,
+        "no_of_users" => 30,
+        "workflows" => []
+      }
+    ]
+  end
+
+  defp build_v3_project_data do
+    [
+      %{
+        "cleartext_uuid" => nil,
+        "hashed_uuid" => hash("foo"),
+        "no_of_active_users" => 3,
+        "no_of_monthly_active_users" => 2,
+        "no_of_users" => 10,
+        "workflows" => []
+      },
+      %{
+        "cleartext_uuid" => nil,
+        "hashed_uuid" => hash("bar"),
+        "no_of_active_users" => 4,
+        "no_of_monthly_active_users" => 3,
         "no_of_users" => 30,
         "workflows" => []
       }

@@ -204,6 +204,81 @@ defmodule ImpactTracker.ProjectTest do
     end
   end
 
+  describe "v3_changeset/2" do
+    setup do
+      %{data: build_v3_project_data()}
+    end
+
+    test "returns a valid changeset including no_of_monthly_active_users", %{
+      data: data
+    } do
+      changeset = %Project{} |> Project.v3_changeset(data)
+
+      assert %Changeset{valid?: true, changes: changes} = changeset
+
+      assert(
+        %{
+          no_of_active_users: 7,
+          no_of_monthly_active_users: 4,
+          no_of_users: 10
+        } = changes
+      )
+
+      assert changes.workflows |> Enum.count() == 2
+    end
+
+    test "validates the presence of no_of_monthly_active_users", %{data: data} do
+      changeset =
+        %Project{}
+        |> Project.v3_changeset(
+          data
+          |> remove_data("no_of_monthly_active_users")
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_monthly_active_users:
+            {"can't be blank", [{:validation, :required}]}
+        ] = errors
+      )
+    end
+
+    test "validates that no_of_monthly_active_users >= 0", %{data: data} do
+      changeset =
+        %Project{}
+        |> Project.v3_changeset(
+          data
+          |> modify_data("no_of_monthly_active_users", -1)
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert(
+        [
+          no_of_monthly_active_users: {
+            "must be greater than or equal to %{number}",
+            [
+              {:validation, :number},
+              {:kind, :greater_than_or_equal_to},
+              {:number, 0}
+            ]
+          }
+        ] = errors
+      )
+
+      changeset =
+        %Project{}
+        |> Project.v3_changeset(
+          data
+          |> modify_data("no_of_monthly_active_users", 0)
+        )
+
+      assert %Changeset{valid?: true} = changeset
+    end
+  end
+
   defp build_project_data do
     uuid = generate_uuid()
 
@@ -214,6 +289,10 @@ defmodule ImpactTracker.ProjectTest do
       "no_of_users" => 10,
       "workflows" => build_workflow_data()
     }
+  end
+
+  defp build_v3_project_data do
+    build_project_data() |> Map.put("no_of_monthly_active_users", 4)
   end
 
   defp build_workflow_data do
