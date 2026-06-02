@@ -51,7 +51,7 @@ defmodule ImpactTracker.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:mock, "~> 0.3.8", only: [:test]},
-      {:oban, "~> 2.17"},
+      {:oban, "~> 2.22.0"},
       {:phoenix, "~> 1.7.10"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_live_dashboard, "~> 0.8.2"},
