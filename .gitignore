@@ -28,3 +28,5 @@ impact_tracker-*.tar
 .env
 .env.test
 .env.docker
+
+local_testing/certs

@@ -46,3 +46,5 @@ erl_crash.dump
 
 .env
 .env.docker
+
+local_testing
