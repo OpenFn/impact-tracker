@@ -1,0 +1,47 @@
+services:
+  impact_tracker_postgres:
+    image: postgres:16.14
+    environment:
+      POSTGRES_USER: impact_tracker
+      POSTGRES_PASSWORD: Secret123
+      POSTGRES_DB: impact_tracker
+    volumes:
+      - ./certs/server.crt:/var/lib/postgresql/server.crt:ro,Z
+      - ./certs/server.key:/var/lib/postgresql/server.key:ro,Z
+      - ./certs/ca.crt:/var/lib/postgresql/ca.crt:ro,Z
+      - pgdata:/var/lib/postgresql/data
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /var/lib/postgresql/server.key /tmp/server.key && \
+        chmod 600 /tmp/server.key && \
+        chown postgres:postgres /tmp/server.key && \
+        exec docker-entrypoint.sh postgres \
+          -c 'ssl=on' \
+          -c 'ssl_cert_file=/var/lib/postgresql/server.crt' \
+          -c 'ssl_key_file=/tmp/server.key' \
+          -c 'ssl_ca_file=/var/lib/postgresql/ca.crt' \
+    ports:
+      - "127.0.0.1:15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U impact_tracker -d impact_tracker -h localhost -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  impact_tracker:
+    build: ../
+    depends_on:
+      impact_tracker_postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://impact_tracker:Secret123@impact_tracker_postgres:5432/impact_tracker
+      SECRET_KEY_BASE: thisisasecretkeybasedonotuseanywhereimportant
+    volumes:
+      - ./certs/ca.crt:/app/priv/ca.cert:ro,Z
+    ports:
+      - "127.0.0.1:4001:4000"
+
+volumes:
+  pgdata:

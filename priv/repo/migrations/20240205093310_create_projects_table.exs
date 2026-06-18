@@ -16,7 +16,7 @@ defmodule ImpactTracker.Repo.Migrations.CreateProjectsTable do
       timestamps()
     end
 
-    create index(:projects, :hashed_uuid, type: :hash)
-    create index(:projects, :cleartext_uuid, type: :hash)
+    create index(:projects, [:hashed_uuid])
+    create index(:projects, [:cleartext_uuid])
   end
 end
