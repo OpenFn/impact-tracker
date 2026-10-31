@@ -283,9 +283,42 @@ defmodule ImpactTracker.SubmissionTest do
 
       assert [
                version:
-                 {"is invalid",
-                  [{:validation, :inclusion}, {:enum, ["1", "2", "3"]}]}
+                 {"is invalid", [{:validation, :inclusion}, {:enum, ["2", "3"]}]}
              ] = errors
+    end
+
+    test "rejects the retired submission version 1", %{data: data} do
+      changeset =
+        %Submission{}
+        |> Submission.new(
+          data |> modify_submission_data("version", "1"),
+          build_geolocation_data()
+        )
+
+      assert %Changeset{valid?: false, errors: errors} = changeset
+
+      assert [
+               version:
+                 {"is invalid", [{:validation, :inclusion}, {:enum, ["2", "3"]}]}
+             ] = errors
+    end
+
+    test "strips a leading `v` from `lightning_version`", %{data: data} do
+      for {sent, stored} <- [
+            {"v2.0.0rc1", "2.0.0rc1"},
+            {"V2.0.0rc1", "2.0.0rc1"},
+            {"2.0.0rc1", "2.0.0rc1"}
+          ] do
+        changeset =
+          %Submission{}
+          |> Submission.new(
+            data |> modify_submission_data("instance", "version", sent),
+            build_geolocation_data()
+          )
+
+        assert %Changeset{valid?: true, changes: %{lightning_version: ^stored}} =
+                 changeset
+      end
     end
 
     test "validates presence of projects", %{data: data} do

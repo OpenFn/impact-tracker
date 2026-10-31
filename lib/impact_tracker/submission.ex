@@ -10,7 +10,7 @@ defmodule ImpactTracker.Submission do
   alias ImpactTracker.Project
 
   # When adding new versions, update this.
-  @supported_versions ["1", "2", "3"]
+  @supported_versions ["2", "3"]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "submissions" do
@@ -117,7 +117,10 @@ defmodule ImpactTracker.Submission do
     %{
       country: attrs |> extract_attr("country"),
       generated_at: attrs |> extract_attr("generated_at"),
-      lightning_version: attrs |> extract_attr("instance", "version"),
+      lightning_version:
+        attrs
+        |> extract_attr("instance", "version")
+        |> normalize_lightning_version(),
       no_of_active_users:
         attrs |> extract_attr("instance", "no_of_active_users"),
       no_of_monthly_active_users:
@@ -130,6 +133,14 @@ defmodule ImpactTracker.Submission do
       version: attrs |> extract_attr("version")
     }
   end
+
+  # Lightning versions arrive both as "v1.2.3" and "1.2.3"; store them
+  # without the leading "v" so they can be compared and grouped consistently.
+  defp normalize_lightning_version(version) when is_binary(version) do
+    String.replace(version, ~r/^[vV](?=\d)/, "")
+  end
+
+  defp normalize_lightning_version(version), do: version
 
   defp extract_attr(attrs, key) do
     attrs |> Map.get(key)
