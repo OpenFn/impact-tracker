@@ -18,7 +18,21 @@ and this project adheres to
 ### Added
 
 - A changelog! [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)
+- Docker images carry their version in the standard
+  `org.opencontainers.image.version` label.
+  [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)
 
 ### Changed
 
-- Strip leading "v" (or "V") from `lightning_version` reports. [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)
+- Strip leading "v" (or "V") from `lightning_version` reports, and a migration
+  strips it from submissions already stored.
+  [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)
+- Docker images are tagged with the bare version (`0.6.0`, not `v0.6.0`).
+  Existing `v` tags are unchanged.
+  [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)
+
+### Removed
+
+- Submission version `1` is no longer accepted. These submissions previously
+  passed validation and then crashed; they are now rejected as invalid.
+  [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)

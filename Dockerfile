@@ -62,6 +62,9 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
+ARG VERSION=""
+LABEL org.opencontainers.image.version=${VERSION}
+
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
