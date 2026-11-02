@@ -34,5 +34,6 @@ and this project adheres to
 ### Removed
 
 - Submission version `1` is no longer accepted. These submissions previously
-  passed validation and then crashed; they are now rejected as invalid.
+  passed validation and then crashed; they are now rejected as invalid,
+  and the worker logs a warning for every report it drops.
   [PR#18](https://github.com/OpenFn/impact-tracker/pull/18)

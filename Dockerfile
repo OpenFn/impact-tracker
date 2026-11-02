@@ -62,9 +62,6 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
-ARG VERSION=""
-LABEL org.opencontainers.image.version=${VERSION}
-
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
@@ -95,5 +92,10 @@ USER nobody
 # advised to add an init process such as tini via `apt-get install`
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
+
+# Last, so a new version only changes the final layer instead of
+# invalidating the cache for the layers above.
+ARG VERSION=""
+LABEL org.opencontainers.image.version=${VERSION}
 
 CMD ["/app/entrypoint.sh"]
