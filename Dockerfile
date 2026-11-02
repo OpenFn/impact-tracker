@@ -93,4 +93,9 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
+# Last, so a new version only changes the final layer instead of
+# invalidating the cache for the layers above.
+ARG VERSION=""
+LABEL org.opencontainers.image.version=${VERSION}
+
 CMD ["/app/entrypoint.sh"]

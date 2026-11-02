@@ -16,7 +16,7 @@ defmodule ImpactTracker.Factory do
       generated_at: DateTime.utc_now(),
       operating_system: sequence(:operating_system, &"windows #{&1}"),
       lightning_version: sequence(:lightning_version, &"V #{&1}"),
-      version: "1",
+      version: "2",
       no_of_users: sequence(:no_of_users, & &1)
     }
   end

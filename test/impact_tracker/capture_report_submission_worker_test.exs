@@ -1,6 +1,9 @@
 defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
   use ImpactTracker.DataCase
 
+  # Dropped reports log a warning; keep it out of the test output.
+  @moduletag :capture_log
+
   alias ImpactTracker.CaptureReportSubmissionWorker, as: Worker
   alias ImpactTracker.Instance
   alias ImpactTracker.Submission
@@ -85,8 +88,12 @@ defmodule ImpactTracker.CaptureReportSubmissionWorkerTest do
     test "does not create new submission and instance when data is invalid" do
       data = build_submission_data(workflows: build_broken_workflows_data())
 
-      assert :ok = perform_job(Worker, data)
+      log =
+        ExUnit.CaptureLog.capture_log(fn ->
+          assert :ok = perform_job(Worker, data)
+        end)
 
+      assert log =~ ~s[Dropped report (version "2")]
       assert Submission |> Repo.one() == nil
     end
 
